@@ -4,18 +4,44 @@ import {
   DrawingUtils,
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs";
 
-// DOM elements
+// DOM references
 const video = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
 const canvasCtx = canvasElement.getContext("2d");
 const column1 = document.getElementById("video-blend-shapes-column1");
+const auSelect = document.getElementById("actionUnits");
+
+// Populate AU dropdown
+const auList = [
+  "AU 1 (Inner Brow Raiser)",
+  "AU 2 (Outer Brow Raiser)",
+  "AU 4 (Brow Lowerer)",
+  "AU 5 (Upper Lid Raiser)",
+  "AU 6 (Cheek Raiser)",
+  "AU 7 (Lid Tightener)",
+  "AU 9 (Nose Wrinkler)",
+  "AU 12 (Lip Corner Puller)",
+  "AU 14 (Dimpler)",
+  "AU 15 (Lip Corner Depressor)",
+  "AU 17 (Chin Raiser)",
+  "AU 20 (Lip Stretcher)",
+  "AU 23 (Lip Tightener)",
+  "AU 26 (Jaw Drop)",
+];
+
+auList.forEach((au) => {
+  const option = document.createElement("option");
+  option.value = au;
+  option.textContent = au;
+  auSelect.appendChild(option);
+});
 
 let faceLandmarker;
 let webcamRunning = false;
 let lastVideoTime = -1;
 let drawingUtils;
 
-// Initialize face landmarker
+// Load the model
 FilesetResolver.forVisionTasks(
   "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
 ).then(async (resolver) => {
@@ -30,13 +56,16 @@ FilesetResolver.forVisionTasks(
     numFaces: 1,
   });
   drawingUtils = new DrawingUtils(canvasElement);
+
+  // Enable buttons after model is loaded
   document.getElementById("webcamButton").disabled = false;
+  document.getElementById("glassButton").disabled = false;
+  document.getElementById("saveDataButton").disabled = false;
 });
 
 // Enable webcam
 document.getElementById("webcamButton").addEventListener("click", async () => {
-  const constraints = { video: true };
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
   video.srcObject = stream;
   video.addEventListener("loadeddata", () => {
     webcamRunning = true;
@@ -44,7 +73,7 @@ document.getElementById("webcamButton").addEventListener("click", async () => {
   });
 });
 
-// Prediction loop
+// Main prediction loop
 async function predictWebcam() {
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   const nowInMs = performance.now();
@@ -105,6 +134,8 @@ async function predictWebcam() {
 
     if (results.faceBlendshapes.length > 0) {
       const categories = results.faceBlendshapes[0].categories;
+
+      // Display blendshape values
       column1.innerHTML = categories
         .map(
           (c) =>
@@ -112,7 +143,10 @@ async function predictWebcam() {
         )
         .join("");
 
-      // Send values to AU recorder if available
+      // Avatar update (placeholder)
+      draw3dScene(results);
+
+      // Pass AU values to saving logic
       if (window.recordAU) {
         const auValues = {};
         for (const cat of categories) {
@@ -128,4 +162,10 @@ async function predictWebcam() {
   } else {
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   }
+}
+
+// --- Placeholder for avatar rendering ---
+function draw3dScene(results) {
+  // Your avatar rendering code should go here (e.g., Three.js, Babylon.js)
+  // This is a placeholder that currently does nothing.
 }
