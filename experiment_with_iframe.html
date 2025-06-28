@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CCSR Experiment 1</title>
+    <script src="https://unpkg.com/jspsych@7.3.1"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/extension-record-video@1.0.1/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-initialize-camera@1.0.1/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych-contrib/extension-mediapipe-face-mesh@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-fullscreen@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-slider-response@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-video-keyboard-response@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
+    <script src="jsPsych/plugin-nextcloud-filedrop.js"></script>
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-browser-check@1.0.2"></script>
+    <script src="jsPsych/extension-unity.js"></script>
+    <script src="jsPsych/plugin-moot.js"></script>
+    <script src="jsPsych/plugin-close-unity.js"></script>
+    <script src="jsPsych/plugin-calibration-camera.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@1.1.2"></script>
+    <script src="utils.js"></script>
+    <link href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css" rel="stylesheet" type="text/css" />
+
+    <link href="experiment_1.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body></body>
+
+<script>
+
+    // Parameters of current condition
+    // The values give the probabilities
+    var condition = {
+        targetpattern_squares: Math.random() < 0.5,
+        doppelgaenger_color_white: Math.random() < 0.5,
+        doppelgaenger_up: Math.random() < 0.5,
+        questionnaire_doppelgaenger_first: Math.random() < 0.5,
+    }
+
+    /* var condition = {
+        targetpattern_squares: true,
+        doppelgaenger_color_white: false,
+        doppelgaenger_up: true,
+        questionnaire_doppelgaenger_first: true
+    } */
+
+    // Global configuration parameters
+    var experiment_config = {
+        ////////////////////////////////////////
+        // RECORDING OF LIVE-TRACKING PARAMETERS
+        //
+        // Should the animation parameters for the Doppelgaenger/Other be recorded?
+        // Preferable to recodring of mediapipe tracking directly, because it 
+        // reflects what the participants saw on the screen
+        //
+        record_doppelgaenger_animation: true, // <- CHANGE TO TRUE
+        record_other_animation: true,
+        record_mediapipe: false,
+    }
+
+    ////////////////////////////////////////////
+    //Screen width and height
+    let scr_width = (screen.width - 120);
+    let scr_height = (screen.height - 120);
+   
+    // The mapping of slides to html files
+    const slides_names = {
+        Slide_1: "slides/Slide_1.html",
+        Slide_2: "slides/Slide_2.html",
+        Slide_3: "slides/Slide_3.html",
+        Slide_4: "slides/Slide_4.html",
+        Slide_5: "slides/Slide_5.html",
+        Slide_6: "slides/Slide_6.html",
+        Slide_7: "slides/Slide_7.html",
+        Slide_8: "slides/Slide_8.html",
+        Slide_9: "slides/Slide_9.html",
+        Slide_10: "slides/Slide_10_DT.html",
+        Slide_11: "slides/Slide_11.html",
+        Slide_12: "slides/Slide_12_DP_DT.html",
+        Slide_13: "slides/Slide_13_DP_DT.html",
+        Slide_14: "slides/Slide_14_DP_DT.html",
+        Slide_15: "slides/Slide_15_DP.html",
+        Slide_16: "slides/Slide_16.html",
+        Slide_17: "slides/Slide_17.html",
+        Slide_18: "slides/Slide_18.html",
+        Slide_19: "slides/Slide_19.html",
+        Slide_20: "slides/Slide_20.html",
+        Slide_21: "slides/Slide_21.html",
+        Slide_22: "slides/Slide_22.html",
+        Slide_23: "slides/Slide_23.html",
+        Slide_24: "slides/Slide_24_DT.html",
+        Slide_25: "slides/Slide_25.html",
+        Slide_26: "slides/Slide_26.html",
+        Slide_27: "slides/Slide_27.html",
+        Slide_28: "slides/Slide_28.html",
+        Slide_29: "slides/Slide_29.html",
+        Slide_30: "slides/Slide_30.html",
+        Slide_31: "slides/Slide_31.html",
+        Slide_32: "slides/Slide_32.html",
+        Slide_33: "slides/Slide_33_DT.html",
+        Slide_34: "slides/Slide_34.html",
+        Slide_35: "slides/Slide_35.html",
+        Slide_36: "slides/Slide_36.html",
+        Slide_37: "slides/Slide_37.html",
+        Slide_38: "slides/Slide_38.html",
+        Slide_39: "slides/Slide_39.html",
+        Slide_40: "slides/Slide_40.html",
+        Slide_41: "slides/Slide_41_DP_DT.html",
+        Slide_43: "slides/Slide_43_DP_DT.html",
+        Slide_45: "slides/Slide_45_DP_DT.html",
+        Slide_47: "slides/Slide_47_DP_DT.html",
+        Slide_49: "slides/Slide_49_DP_DT.html",
+        Slide_51: "slides/Slide_51_DP_DT.html",
+        Slide_53: "slides/Slide_53_DP_DT.html",
+        Slide_55: "slides/Slide_55_DP_DT.html",
+        Slide_57: "slides/Slide_57_DP_DT.html",
+        Slide_59: "slides/Slide_59.html",
+        Slide_60: "slides/Slide_60_DP_DT.html",
+        Slide_62: "slides/Slide_62_DP_DT.html",
+        Slide_64: "slides/Slide_64_DP_DT.html",
+        Slide_66: "slides/Slide_66_DP_DT.html",
+        Slide_68: "slides/Slide_68.html",
+        Slide_69: "slides/Slide_69.html",
+        Slide_70: "slides/Slide_70.html",
+        Slide_71: "slides/Slide_71.html",
+        Slide_72: "slides/Slide_72.html",
+        Slide_73: "slides/Slide_73.html",
+        Slide_74: "slides/Slide_74.html",
+        Slide_75: "slides/Slide_75.html",
+        Slide_76: "slides/Slide_76.html",
+        Slide_77: "slides/Slide_77.html",
+        Slide_78: "slides/Slide_78.html",
+        Slide_79: "slides/Slide_79.html",
+        Slide_80: "slides/Slide_80.html",
+        Slide_81: "slides/Slide_81.html",
+        consent_before_camera: "slides/consent_before_camera.html",
+        upload_consent: "slides/upload_consent.html",
+        start_consent:"slides/start_consent.html",
+        upload_failed: "slides/upload_failed.html",
+
+    };
+    const images_filenames = [
+        "images/Slide_10_squares.png",
+        "images/Slide_10_triangle.png",
+        "images/Slide_11_squares.png",
+        "images/Slide_11_triangle .png",
+        "images/Slide_12_1_down_squares.png",
+        "images/Slide_12_1_down_triangles.png",
+        "images/Slide_12_1.png",
+        "images/Slide_12_1_up_squares.png",
+        "images/Slide_12_1_up_triangles.png",
+        "images/Slide_12_2_down_squares.png",
+        "images/Slide_12_2_down_triangles.png",
+        "images/Slide_12_2.png",
+        "images/Slide_12_2_up_squares.png",
+        "images/Slide_12_2_up_triangles.png",
+        "images/Slide_12_3.png",
+        "images/Slide_12_4.png",
+        "images/Slide_13_down.png",
+        "images/Slide_13_up.png",
+        "images/Slide_14_down_squares.png",
+        "images/Slide_14_down_triangles.png",
+        "images/Slide_14_up_squares.png",
+        "images/Slide_14_up_triangles.png",
+        "images/Slide_15_down_squares.png",
+        "images/Slide_15_down_triangles.png",
+        "images/Slide_15_up_squares.png",
+        "images/Slide_15_up_triangles.png",
+        "images/Slide_17.png",
+        "images/Slide_18.png",
+        "images/Slide_2.png",
+        "images/Slide_3.png",
+        "images/Slide_40_1.png",
+        "images/Slide_40_2.png",
+        "images/Slide_41_2.png",
+        "images/Slide_41_black.png",
+        "images/Slide_41_white.png",
+        "images/Slide_4.png",
+        "images/Slide_57.png",
+        "images/Slide_59.png",
+        "images/Slide_5.png",
+        "images/Slide_6_1.png",
+        "images/Slide_6_2.png",
+        "images/Slide_6_3.png",
+        "images/Slide_6_4.png",
+        "images/Slide_68.png",
+        "images/Slide_76.png",
+        "images/Slide_80.png",
+        "images/warmup/anger.PNG",
+        "images/warmup/disgust.PNG",
+        "images/warmup/fear.PNG",
+        "images/warmup/joy.PNG",
+        "images/warmup/pride.PNG",
+        "images/warmup/sad.PNG",
+        "images/warmup/surprise.PNG",
+    ];
+    const video_filenames = [
+        "videos/north europ F03-Anger-Face Forward.mp4",
+        "videos/north europ F03-Disgust-Face Forward.mp4",
+        "videos/north europ F03-Fear-Face Forward.mp4",
+        "videos/north europ F03-Joy-Face Forward.mp4",
+        "videos/north europ F03-Pride-Face Forward.mp4",
+        "videos/north europ F03-Sadness-Face Forward.mp4",
+        "videos/north europ F03-Surprise-Face Forward.mp4",
+    ];
+
+    const warmup_videos_names = [
+        {video: "videos/north europ F03-Anger-Face Forward.mp4"},
+        {video: "videos/north europ F03-Disgust-Face Forward.mp4"},
+        {video: "videos/north europ F03-Fear-Face Forward.mp4" },
+        {video: "videos/north europ F03-Joy-Face Forward.mp4"},
+        {video: "videos/north europ F03-Pride-Face Forward.mp4"},
+        {video: "videos/north europ F03-Sadness-Face Forward.mp4"},
+        {video: "videos/north europ F03-Surprise-Face Forward.mp4"},
+];
+
+    // Placeholders/replacements
+    const replacements = {
+        "target": condition.targetpattern_squares ? "squares" : "triangles",
+        "nontarget": condition.targetpattern_squares ? "triangles" : "squares",
+        "position": condition.doppelgaenger_color_white ? condition.doppelgaenger_up ? "up" : "down" : condition.doppelgaenger_up ? "down" : "up",
+        "Hatcolor": condition.doppelgaenger_color_white ? "white" : "black"
+    }
+
+    
+
+    //console.log("scr_width,adjusted_height",scr_width,Math.round(scr_width*0.56))
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    //// PREPARATION
+
+    
+
+    // Load the html files and replace placeholders
+    var slides_content = prepare_html(slides_names, replacements);
+
+    const jsPsych = initJsPsych({
+        extensions: [
+            {
+                type: jsPsychUnityExtension,
+                params: {
+                    loaderUrl: "./moot/moot_online.loader.js",
+                    dataUrl: "./moot/moot_online.data.unityweb",
+                    frameworkUrl: "./moot/moot_online.framework.js.unityweb",
+                    codeUrl: "./moot/moot_online.wasm.unityweb",
+                    width: scr_width.toString() + 'px',//"800px",
+                    height: (Math.round(scr_width*0.56)).toString() + 'px',//"500px",
+                    waitEvent: 'JSPsychUnityReadyEvent'
+                }
+            },
+            {
+                type: jsPsychExtensionMediapipeFacemesh,
+                params: {
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+                    }
+                }
+            },
+            { type: jsPsychExtensionRecordVideo },
+        ],
+        on_finish: function () {
+            //window.location = "https://app.prolific.co/submissions/complete?cc=C1DPS5ZY"; /// automatically redirect the participant to the completion URL prolific
+            //jsPsych.data.displayData('json');
+            //jsPsych.data.get().localSave('json', 'mydata.json');
+            //FileSaver.saveAs(jsPsych.data.get().json(), "hello world.txt"); 
+        }
+    });
+    //////////////////////////////////////////
+    //////////////////////////////////////////
+    //////////Prolific ID
+    //////////////////////////////////////////
+    var subject_id = jsPsych.data.getURLVariable('PROLIFIC_PID');
+    var study_id = jsPsych.data.getURLVariable('STUDY_ID');
+    var session_id = jsPsych.data.getURLVariable('SESSION_ID');
+
+    jsPsych.data.addProperties({
+        subject_id: subject_id,
+        study_id: study_id,
+        session_id: session_id
+    });
+
+
+    //////////////////////////////////////////
+    //////////////////////////////////////////
+    //////////Add version information to data (16 balancing version)
+    //////////////////////////////////////////
+    jsPsych.data.addProperties({
+        is_targetpattern_squares:condition.targetpattern_squares,
+        is_doppelgaenger_color_white:condition.doppelgaenger_color_white,
+        is_doppelgaenger_up:condition.doppelgaenger_up,
+        is_questionnaire_doppelgaenger_first:condition.questionnaire_doppelgaenger_first
+        });
+
+    //////////////////////////////////////////
+    //////////////////////////////////////////
+    //////////Browser Check and exclusion criteria
+    //////////////////////////////////////////  
+    const browserCheck = checkBrowser(); 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CREATE TRIALS FROM PSYCHOPY PLUGINS
+
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    //// INITIALIZATION, OTHER STUFF
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+
+    const preloadMedia = {
+        type: jsPsychPreload,
+        message: "<p>Loading videos and images.</p>",
+        //auto_preload: true,
+        images: images_filenames,
+        videos: video_filenames,
+        show_detailed_errors: true
+    }
+    const initCamera = {
+        type: jsPsychInitializeCamera,
+        include_audio: false
+    }
+
+    const enter_fullscreen = {
+        type: jsPsychFullscreen,
+        fullscreen_mode: true,
+        message: '<p>Move the browser on the screen where the camera is above the screen. The experiment will switch to full screen mode when you press the button below, please leave it in full screen for the entire experiment</p>',
+    }
+
+    const exit_fullscreen = {
+        type: jsPsychFullscreen,
+        fullscreen_mode: false,
+        delay_after: 0
+    }
+
+    const debug_condition = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: "<div><p>Condition</p><p>" + JSON.stringify(condition, null, 2) + "</p></div>",
+        //trial_duration: 1000,
+        choice: ['ArrowRight'],
+        prompt: "<p>press right arrow key to continue</p>"
+    }
+
+
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    //// INTRODUCTION
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+
+    var allSlides = [];
+    Object.keys(slides_content).forEach(key => {
+        html = slides_content[key];
+
+        allSlides.push({
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: html,
+            prompt: "<p>Press right arrow key for further instructions</p>",
+            choices: ['ArrowRight'],
+        });
+
+    });
+    var generalInstructions = [];
+    for (let i = 0; i < 6; i++) {
+        generalInstructions.push(allSlides[i]);
+    }
+    generalInstructions[0].prompt = '<p>Press right arrow key for further instructions</p> <img alt="" src="images/right_arrow.png" width="75" height="50"/>';
+    for (let i = 1; i < generalInstructions.length; i++) {
+        generalInstructions[i].prompt = '<img alt="" src="images/right_arrow.png" width="75" height="50"/>';
+    }
+
+    var mainInstructions = [];
+    for (let i = 9; i < 15; i++) {
+        mainInstructions.push(allSlides[i]);
+    }
+    for (let i = 0; i < mainInstructions.length; i++) {
+        mainInstructions[i].prompt = '<img alt="" src="images/right_arrow.png" width="75" height="50"/>';
+    }
+    var countDown = [];
+    for (let i = 25; i < 30; i++) {
+        countDown.push(allSlides[i]);
+
+    }
+
+    for (let i = 0; i < countDown.length; i++) {
+        delete countDown[i].choices;
+        delete countDown[i].prompt;
+        countDown[i].trial_duration = 1500;
+    }
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    //// WARMUP
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    
+    const warmup_block = createWarumupTimeline();
+
+
+    var summaryInstruction = allSlides[23];
+    summaryInstruction.prompt = '<img alt="" src="images/right_arrow.png" width="75" height="50"/>';
+    var practicePhaseStartInstruction = allSlides[24];
+    delete practicePhaseStartInstruction.choices;
+    delete practicePhaseStartInstruction.prompt;
+    practicePhaseStartInstruction.trial_duration = 1500;
+
+    var practicePhaseEndInstruction = allSlides[30];
+    delete practicePhaseEndInstruction.choices;
+    delete practicePhaseEndInstruction.prompt;
+    practicePhaseEndInstruction.trial_duration = 1500;
+
+    var MOOTPhaseStartInstruction = allSlides[33];
+    delete MOOTPhaseStartInstruction.choices;
+    delete MOOTPhaseStartInstruction.prompt;
+    MOOTPhaseStartInstruction.trial_duration = 1500;
+
+
+    var repeatInstructionChoiceFirst = allSlides[15];
+    delete repeatInstructionChoiceFirst.prompt;
+    repeatInstructionChoiceFirst.choices = ['ArrowLeft', 'ArrowRight'];
+
+    var repeatInstructionChoiceSecond = allSlides[31];
+    delete repeatInstructionChoiceSecond.prompt;
+    repeatInstructionChoiceSecond.choices = ['ArrowLeft', 'ArrowRight'];
+
+    var instruction_if_node = {
+        timeline: mainInstructions.slice(1),
+        conditional_function: function () {
+            // get the data from the previous trial,
+            // and check which key was pressed
+            var last_trial_choice = jsPsych.data.get().last(1).values()[0].response;
+            if (last_trial_choice == 'arrowright') {
+                return false;
+            } if (last_trial_choice == 'arrowleft') {
+                return true;
+            }
+        }
+
+    }
+    const practiceInstruction = allSlides[16];
+    practiceInstruction.prompt = '<img alt="" src="images/right_arrow.png" width="75" height="50"/>';
+    const startInstruction = []
+    .concat(generalInstructions)
+    .concat(warmup_block)
+    .concat(mainInstructions);
+    startInstruction.push(repeatInstructionChoiceFirst);
+    startInstruction.push(instruction_if_node);
+    startInstruction.push(practiceInstruction);
+
+    const questionnaireInstruction = allSlides[39];
+    questionnaireInstruction.prompt = '<img alt="" src="images/right_arrow.png" width="75" height="50"/>';
+    var questionnaire = allSlides.slice(40, 49);
+
+    const usabilityInstruction = allSlides[49];
+    usabilityInstruction.prompt = '<img alt="" src="images/right_arrow.png" width="75" height="50"/>';
+    var usabilityQuestionnaire = allSlides.slice(50, 54);
+    var usabilityQuestionairePlus = allSlides.slice(55, 66);
+    
+    console.log("usabilityQuestionnaire.stimulus", usabilityQuestionnaire[2])
+
+
+
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    ///// Practice test
+    ///////////////////////////////////////////////////
+    var practice_test_block = practiceFeedBack();
+    console.log("practice_test_block", practice_test_block)
+    ////////////////////////////////////////////////////
+    /////Instruction before PracticeMOOT
+    ////////////////////////////////////////////////////    
+    instructionBeforePracticeMOOT = [summaryInstruction, practicePhaseStartInstruction].concat(countDown);
+    ////////////////////////////////////////////////////
+    /////PracticeMOOT
+    ////////////////////////////////////////////////////
+
+    const practice_moot_block = createPracticeTimeline(); //space bar response data collection is missing 
+
+    ////////////////////////////////////////////////////
+    /////Instruction before MOOT
+    ////////////////////////////////////////////////////
+
+
+    var instructionBeforeMOOT = [practicePhaseEndInstruction, repeatInstructionChoiceSecond, instruction_if_node, summaryInstruction, MOOTPhaseStartInstruction]
+        .concat(countDown);
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    //// MOOT
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+
+
+    //https://www.geeksforgeeks.org/how-to-shuffle-an-array-using-javascript/
+    function shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+
+            // Generate random number
+            var j = Math.floor(Math.random() * (i + 1));
+
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+
+        return array;
+    }
+
+    // Create the moot blocks V1,...,V4
+    const trials_moot_blocks = createMootTimeline();
+
+
+
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    //// QUESTIONNAIRE
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+
+    // questionnaire.unshift(questionnaireInstruction);
+    var questionsAgencyOwnership = [];
+    for (i = 0; i < questionnaire.length-1; i++) {
+        html_1 = questionnaire[i].stimulus;
+        html_2 = questionnaire[i].stimulus;
+        if (condition.doppelgaenger_color_white) {
+            html_2 = html_2.replaceAll("white", "black");
+        } else {
+            html_2 = html_2.replaceAll("black", "white");
+        }
+        if (condition.questionnaire_doppelgaenger_first) {
+            // do nothing
+        } else {
+            [html_1, html_2] = [html_2, html_1];
+        }
+        questionsAgencyOwnership.push({
+            type: jsPsychHtmlSliderResponse,
+            stimulus: html_1,
+            step: 1,
+            labels: ["Fully agree", "Fully disagree"],
+
+        });
+        questionsAgencyOwnership.push({
+            type: jsPsychHtmlSliderResponse,
+            stimulus: html_2,
+            step: 1,
+            labels: ["Fully agree", "Fully disagree"],
+
+        });
+    }
+    var questionsIOS = [];
+    for (i = questionnaire.length-1; i < questionnaire.length; i++) {
+        html_1 = questionnaire[i].stimulus;
+        html_2 = questionnaire[i].stimulus;
+        if (condition.doppelgaenger_color_white) {
+            html_2 = html_2.replaceAll("white", "black");
+        } else {
+            html_2 = html_2.replaceAll("black", "white");
+        }
+        if (condition.questionnaire_doppelgaenger_first) {
+            // do nothing
+        } else {
+            [html_1, html_2] = [html_2, html_1];
+        }
+        questionsIOS.push({
+            type: jsPsychHtmlSliderResponse,
+            stimulus: html_1,
+            step:16.66 ,
+            labels: ["1", "2","3","4","5","6","7"],
+
+        });
+        questionsIOS.push({
+            type: jsPsychHtmlSliderResponse,
+            stimulus: html_2,
+            step: 16.66,
+            labels: ["1", "2","3","4","5","6","7"],
+
+        });
+    }
+    questionsAgencyOwnership.unshift(questionnaireInstruction);
+
+
+
+
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    //// Usability Questions
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+
+    var usabilityQuestions = [];
+    for (i = 0; i < usabilityQuestionnaire.length; i++) {
+        html_1 = usabilityQuestionnaire[i].stimulus;
+        html_2 = usabilityQuestionnaire[i].stimulus;
+        if (condition.doppelgaenger_color_white) {
+            html_2 = html_2.replaceAll("white", "black");
+        } else {
+            html_2 = html_2.replaceAll("black", "white");
+        }
+        if (condition.questionnaire_doppelgaenger_first) {
+            // do nothing
+        } else {
+            [html_1, html_2] = [html_2, html_1];
+        }
+        usabilityQuestions.push({
+            type: jsPsychHtmlSliderResponse,
+            stimulus: html_1,
+            step: 1,
+            labels: ["Not at all", "Very much"],
+
+        });
+        usabilityQuestions.push({
+            type: jsPsychHtmlSliderResponse,
+            stimulus: html_2,
+            step: 1,
+            labels: ["Not at all", "Very much"],
+
+        });
+    }
+    usabilityQuestions.unshift(usabilityInstruction);
+    
+    var usabilityQuestionnaireLatency = {
+        type: jsPsychHtmlSliderResponse,
+            stimulus: allSlides[67].stimulus,
+            step: 1,
+            labels: ["Not at all", "Very much"],
+
+    }
+    console.log("allSlides[80].stimulus",allSlides[67].stimulus)
+    usabilityQuestions.push(usabilityQuestionnaireLatency);
+
+    var usabilityQuestionaireExtend = [];
+    for (i = 0; i < usabilityQuestionairePlus.length - 2; i++) {
+        html = usabilityQuestionairePlus[i].stimulus;
+        usabilityQuestionaireExtend.push({
+            type: jsPsychHtmlSliderResponse,
+            stimulus: html,
+            step: 1,
+            labels: ["Fully agree", "Fully disagree"],
+
+        });
+
+    }
+
+
+    
+
+    var usabilityQuestionaireTextBox = [];
+    usabilityQuestionaireTextBox.push({
+        type: jsPsychSurveyText,
+        questions: [
+
+            {
+                prompt: usabilityQuestionairePlus[usabilityQuestionairePlus.length - 2].stimulus.replace(/<[^>]+>/g, ''),
+                required: true,
+                placeholder: 'Your text here',
+                rows: 3,
+                columns: 40,
+            }
+
+
+        ]
+    })
+
+    usabilityQuestionaireTextBox.push({
+        type: jsPsychSurveyText,
+        questions: [
+
+            {
+                prompt: usabilityQuestionairePlus[usabilityQuestionairePlus.length - 1].stimulus.replace(/<[^>]+>/g, ''),
+                required: true,
+                placeholder: 'Your text here',
+                rows: 3,
+                columns: 40,
+            },
+
+
+
+        ],
+    })
+
+    ////////////////////////////////////////////
+    ////////////////////////////////////////////
+    ///////////Thanks You slide
+    ////////////////////////////////////////////    
+    var thankYou = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: () => {
+                let html = `<h1>Thank you for your participation!</h1>`;
+                return html;
+            },
+            choices: "NO_KEYS",
+            trial_duration: 3000,
+            on_finish: function(){
+                window.location = "https://app.prolific.co/submissions/complete?cc=CU1CM59X";
+            }
+        }
+    ////////////////////////////////////////////
+    ////////////////////////////////////////////
+    ///////////close / unplug Unity plugin
+    ////////////////////////////////////////////    
+    var closeUnity = {
+            type: jsPsychCloseUnityPlugin,
+        }
+
+    ////////////////////////////////////////////
+    ////////////////////////////////////////////
+    ///////////camera mirror view 
+    ////////////////////////////////////////////
+    var calibration_camera = {
+            type: jsPsychCalibration,
+            prompt: '<p>It is important that you keep your head in the elipse throughout the experiment. Furthermore, the camera should face you frontally, if needed adjust your camera accordingly.</p>',
+
+        }
+    ///////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    ///////////consent before camera initialization 
+    ///////////////////////////////////////////////////
+
+    const consentBeforeCameraInit = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: slides_content['consent_before_camera'],
+            choices: ['Next'],
+            //trial_duration: 3000,
+        }
+    
+    const startConsent = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: slides_content['start_consent'],
+            choices: ['I Agree'],
+            
+        }
+
+    
+console.log("trials moot block",trials_moot_blocks.slice(0,2))        
+
+  ////////////////////////////////////////////
+  ////////////////////////////////////////////
+  ///////////consent and uplaod
+  ////////////////////////////////////////////
+  var consentAndUpload = createConsentAndUpload();
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    // Assemble timeline
+    
+    const timeline = [
+        browserCheck,
+        preloadMedia,
+        startConsent,
+        //debug_condition, // <--- DEBUGIN ONLY. Remove for data collection
+        consentBeforeCameraInit,
+        initCamera,
+        enter_fullscreen,
+
+    ]
+        .concat([calibration_camera])
+        .concat(startInstruction)
+        .concat(practice_test_block)
+        .concat([calibration_camera])
+        .concat(instructionBeforePracticeMOOT)
+        .concat(practice_moot_block)
+        .concat(instructionBeforeMOOT) 
+        //.concat(trials_moot_blocks.slice(0,1))
+        .concat([{
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: '<iframe src="iiindex.html" width="100%" height="800px" frameborder="0"></iframe>',
+        choices: [' '],
+        prompt: "<p>Press space when you are done.</p>"
+    }])
+        .concat(questionsAgencyOwnership)
+        .concat(questionsIOS)
+        .concat(usabilityQuestions)
+        .concat(usabilityQuestionaireExtend)
+	    .concat([closeUnity])
+        .concat(usabilityQuestionaireTextBox)
+        .concat(exit_fullscreen)
+        .concat(consentAndUpload)  
+        .concat(thankYou);
+
+    ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
+    // Run the experiment
+
+    console.log(timeline);
+
+    jsPsych.run(timeline);
+</script>
+
+</html>
