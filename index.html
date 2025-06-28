@@ -1,101 +1,118 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-    <title>Face Landmarker</title>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>AU Experiment</title>
 
-    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet" />
-    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 
-    <!-- 👇 AU Save Logic (MUST come before your app script) -->
-    <script>
-      const allAUData = {};
+  <!-- Save AU Logic -->
+  <script>
+    const allAUData = {};
+    const performedAUs = new Set();
 
-      window.recordAU = function (auName, values) {
+    window.recordAU = function (auName, values) {
+      if (!performedAUs.has(auName)) {
         allAUData[auName] = values;
-      };
+        performedAUs.add(auName);
+        console.log("Recorded:", auName);
 
-      window.saveAUData = function () {
-        const blob = new Blob([JSON.stringify(allAUData, null, 2)], {
-          type: "application/json",
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "au_data.json";
-        a.click();
-        URL.revokeObjectURL(url);
-      };
+        // Check if all dropdown AUs are covered
+        const dropdown = document.getElementById("actionUnits");
+        const totalOptions = dropdown.options.length;
 
-      document.addEventListener("DOMContentLoaded", () => {
-        const saveBtn = document.getElementById("saveDataButton");
-        if (saveBtn) {
-          saveBtn.addEventListener("click", window.saveAUData);
+        if (performedAUs.size === totalOptions) {
+          console.log("✅ All AUs completed. Saving...");
+          saveAUData();
         }
+      }
+    };
+
+    function saveAUData() {
+      const blob = new Blob([JSON.stringify(allAUData, null, 2)], {
+        type: "application/json"
       });
-    </script>
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "au_data.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
 
-    <!-- Your app's original compiled JS and CSS -->
-    <script type="module" crossorigin src="./assets/index-D5LYGwyn.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BSX92Tk6.css" />
-  </head>
+    window.saveAUData = saveAUData;
 
-  <body>
-    <section id="demos" class="invisible">
-      <div id="liveView" class="videoView">
-        <button id="webcamButton" class="mdc-button mdc-button--raised">
-          <span class="mdc-button__ripple"></span>
-          <span class="mdc-button__label">ENABLE WEBCAM</span>
-        </button>
+    document.addEventListener("DOMContentLoaded", () => {
+      const saveBtn = document.getElementById("saveDataButton");
+      if (saveBtn) {
+        saveBtn.addEventListener("click", saveAUData);
+      }
+    });
+  </script>
 
-        <button id="glassButton" class="mdc-button mdc-button--raised">
-          <span class="mdc-button__ripple"></span>
-          <span class="mdc-button__label">ENABLE GLASS</span>
-        </button>
+  <script type="module" crossorigin src="./assets/index-D5LYGwyn.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BSX92Tk6.css" />
+</head>
 
-        <!-- ✅ AU Save Button -->
-        <button id="saveDataButton" class="mdc-button mdc-button--outlined" style="margin:10px;">
-          Save All AU Data
-        </button>
+<body>
+  <section id="demos" class="invisible">
+    <div id="liveView" class="videoView">
+      <button id="webcamButton" class="mdc-button mdc-button--raised">
+        <span class="mdc-button__ripple"></span>
+        <span class="mdc-button__label">ENABLE WEBCAM</span>
+      </button>
 
-        <div style="margin: 10px">
-          <label for="background">Choose Background:</label>
-          <select id="background" autocomplete="off">
-            <option value="video">Camera</option>
-            <option value="brown">Grey Background</option>
-            <option value="image">Choose Image</option>
-          </select>
-          <input type="file" id="imageUpload" style="visibility: hidden; resize: none" accept="image/*" autocomplete="off" />
-        </div>
+      <!-- Optional Save Button -->
+      <button id="saveDataButton" class="mdc-button mdc-button--outlined" style="margin:10px;">
+        Save All AU Data
+      </button>
 
-        <div style="margin: 10px">
-          <label style="display: inline-block; vertical-align: middle" for="background">Choose Amplification:</label>
-          <input id="amplification" type="number" value="1" autocomplete="off" style="display: inline-block; vertical-align: middle" />
-        </div>
-
-        <div style="margin: 10px">
-          <label style="display: inline-block; vertical-align: middle" for="background">Choose Action Unit:</label>
-          <select id="actionUnits" autocomplete="off"></select>
-        </div>
-
-        <div style="display: flex; flex-direction: column; align-items: center">
-          <div style="position: relative; width: 100%; height: 100%">
-            <video id="webcam" style="width: 100%; height: 100%; object-fit: cover" autoplay playsinline></video>
-            <canvas class="output_canvas" id="output_canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
-          </div>
-
-          <div id="3dscene" style="margin-top: 2px; width: 100%; height: 100%; min-height: 480px;"></div>
-        </div>
+      <div style="margin: 10px">
+        <label for="background">Choose Background:</label>
+        <select id="background" autocomplete="off">
+          <option value="video">Camera</option>
+          <option value="brown">Grey Background</option>
+          <option value="image">Choose Image</option>
+        </select>
+        <input type="file" id="imageUpload" style="visibility: hidden;" accept="image/*" autocomplete="off" />
       </div>
 
-      <div class="blend-shapes">
-        <div class="column">
-          <ul class="blend-shapes-list" id="video-blend-shapes-column1"></ul>
-        </div>
+      <div style="margin: 10px">
+        <label for="amplification">Choose Amplification:</label>
+        <input id="amplification" type="number" value="1" autocomplete="off" />
       </div>
-    </section>
-  </body>
+
+      <div style="margin: 10px">
+        <label for="actionUnits">Choose Action Unit:</label>
+        <select id="actionUnits" autocomplete="off">
+          <option value="AU01">AU01 - Inner Brow Raiser</option>
+          <option value="AU02">AU02 - Outer Brow Raiser</option>
+          <option value="AU04">AU04 - Brow Lowerer</option>
+          <option value="AU06">AU06 - Cheek Raiser</option>
+          <option value="AU12">AU12 - Lip Corner Puller</option>
+          <option value="AU15">AU15 - Lip Corner Depressor</option>
+        </select>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center">
+        <div style="position: relative; width: 100%; height: 100%">
+          <video id="webcam" style="width: 100%; height: 100%; object-fit: cover" autoplay playsinline></video>
+          <canvas class="output_canvas" id="output_canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+        </div>
+
+        <div id="3dscene" style="margin-top: 2px; width: 100%; height: 100%; min-height: 480px;"></div>
+      </div>
+    </div>
+
+    <div class="blend-shapes">
+      <div class="column">
+        <ul class="blend-shapes-list" id="video-blend-shapes-column1"></ul>
+      </div>
+    </div>
+  </section>
+</body>
 </html>
